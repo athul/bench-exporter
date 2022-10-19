@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os/exec"
+	"strings"
 )
 
 var benchDir = "/home/frappe/bench-version-14"
@@ -39,6 +40,7 @@ func getApps() []Apps {
 	return appstruct
 
 }
+
 type AppVersions struct {
 	Commit  string `json:"commit"`
 	App     string `json:"app"`
@@ -46,20 +48,24 @@ type AppVersions struct {
 	Version string `json:"version"`
 }
 
-func getAppVersions() []AppVersions{
-  cmd := exec.Command("bench", "version", "--format", "json")
+func getAppVersions() []AppVersions {
+	cmd := exec.Command("bench", "version", "--format", "json")
 	cmd.Dir = benchDir
 	out, err := cmd.Output()
-	if err!=nil{
-	  log.Println("Version retreival failed",err)
+	if err != nil {
+		log.Println("Version retreival failed", err)
 	}
-
 	var appversions []AppVersions
-
-	json.Unmarshal(out,&appversions)
-
-	log.Println(appversions)
-
+	json.Unmarshal(out, &appversions)
 	return appversions
+}
 
+func getBenchVersion() string {
+	cmd := exec.Command("bench", "--version")
+	cmd.Dir = benchDir
+	out, err := cmd.Output()
+	if err != nil {
+		log.Println("Unable to fetch bench version ", err)
+	}
+	return strings.TrimSuffix(string(out), "\n")
 }
