@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,6 +16,7 @@ type benchMetrics struct {
 	activeUsers      *prometheus.Desc
 	systemUsers      *prometheus.Desc
 }
+
 // newBenchMetrics is benchMetrics contructor
 func newBenchMetrics() *benchMetrics {
 	return &benchMetrics{
@@ -41,6 +41,7 @@ func (b *benchMetrics) Describe(ch chan<- *prometheus.Desc) {
 	ch <- b.usersonSites
 	ch <- b.systemUsers
 }
+
 // Collect implements the collector for prometheus
 func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 	apps := getApps()
@@ -49,13 +50,13 @@ func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 	sites := []string{}
 	for i := range apps {
 		sites = append(sites, apps[i].Site)
-		log.Println(apps[i].Site)
-		log.Println(strings.Join(apps[i].Apps, ","))
 		all, active, smusers := getUserCountonSite(apps[i].Site)
 		ch <- prometheus.MustNewConstMetric(b.appsonSites, prometheus.CounterValue, float64(len(apps[i].Apps)), apps[i].Site, strings.Join(apps[i].Apps, ","))
-		ch <- prometheus.MustNewConstMetric(b.usersonSites, prometheus.CounterValue, all, apps[i].Site)
-		ch <- prometheus.MustNewConstMetric(b.activeUsers, prometheus.CounterValue, active, apps[i].Site)
-		ch <- prometheus.MustNewConstMetric(b.systemUsers, prometheus.CounterValue, smusers, apps[i].Site)
+		if userCounts {
+			ch <- prometheus.MustNewConstMetric(b.usersonSites, prometheus.CounterValue, all, apps[i].Site)
+			ch <- prometheus.MustNewConstMetric(b.activeUsers, prometheus.CounterValue, active, apps[i].Site)
+			ch <- prometheus.MustNewConstMetric(b.systemUsers, prometheus.CounterValue, smusers, apps[i].Site)
+		}
 	}
 	ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.CounterValue, float64(len(apps)), strings.Join(sites, ","))
 	for i := range versions {

@@ -7,9 +7,6 @@ import (
 	"strings"
 )
 
-// TODO: move this to receive data from command line flag or config file
-var benchDir = "/home/frappe/bench-version-14"
-
 // Holds the Sites and Apps installed on
 // the specific site
 type Apps struct {
@@ -20,36 +17,33 @@ type Apps struct {
 // getSites returns the sites in the bench
 // returns the sites as a string slice
 // as multitenant systems will be used
-func getSites()[]string{
+func getSites() []string {
 	cmd := exec.Command("bench", "--site", "all", "list-apps", "--format", "json")
 	cmd.Dir = benchDir
 	out, err := cmd.Output()
 	if err != nil {
-		log.Println("Error getting result")
+		log.Println("Error getting Sites", err)
 	}
-	log.Println(string(out))
 	var apps map[string][]interface{}
 	json.Unmarshal(out, &apps)
-  var sites []string
-  for k := range apps{
-    sites = append(sites, k)
-  }
-  return sites
+	var sites []string
+	for k := range apps {
+		sites = append(sites, k)
+	}
+	return sites
 }
 
 // getApps returns the Apps installed on the site
-// Will return as a slice of Apps struct 
+// Will return as a slice of Apps struct
 func getApps() []Apps {
 	cmd := exec.Command("bench", "--site", "all", "list-apps", "--format", "json")
 	cmd.Dir = benchDir
 	out, err := cmd.Output()
 	if err != nil {
-		log.Println("Error getting result")
+		log.Println("Error getting All apps", err)
 	}
-	log.Println(string(out))
 	var apps map[string][]interface{}
 	json.Unmarshal(out, &apps)
-	log.Println(len(apps))
 	var appstruct []Apps
 	for k, v := range apps {
 		var appnames []string
@@ -60,13 +54,11 @@ func getApps() []Apps {
 			Site: k,
 			Apps: appnames,
 		})
-		log.Println(appstruct)
 	}
 	return appstruct
-
 }
 
-// AppVersions hold the JSON struct 
+// AppVersions hold the JSON struct
 // for the Versions of Apps
 type AppVersions struct {
 	Commit  string `json:"commit"`
