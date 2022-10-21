@@ -2,7 +2,10 @@ module github.com/athul/bench-exporter
 
 go 1.18
 
-require github.com/prometheus/client_golang v1.13.0
+require (
+	github.com/go-sql-driver/mysql v1.6.0
+	github.com/prometheus/client_golang v1.13.0
+)
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

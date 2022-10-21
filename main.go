@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-
+  // TODO:improve this whole thing
 	benchCollector := newBenchMetrics()
 	prometheus.MustRegister(benchCollector)
 	http.Handle("/metrics", promhttp.Handler())
