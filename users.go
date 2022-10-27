@@ -9,7 +9,7 @@ import (
 
 // getUserCountonSite returns the count for allusers, activeusers and system managers
 // uses direct SQL queries.
-func getUserCountonSite(siteName string) (float64, float64, float64) {
+func getUserCountonSite(siteName string, u chan float64, a chan float64, s chan float64) {
 	allUserQuery := `SELECT COUNT(name) FROM tabUser WHERE enabled=1 AND user_type != 'Website User' AND name NOT IN ("Administrator","Guest");`
 	activeUserQuery := `SELECT COUNT(*) FROM tabUser WHERE enabled=1 AND user_type != 'Website User' AND name NOT IN ("Administrator","Guest") AND hour(timediff(now(), last_active)) < 72;`
 	systemManagerQuery := "SELECT DISTINCT COUNT(name) FROM `tabUser` AS p WHERE enabled=1 AND docstatus<2 AND name NOT IN (\"Administrator\",\"Guest\") AND EXISTS(SELECT * FROM `tabHas Role` AS ur WHERE ur.parent=p.name AND ur.role=\"System Manager\");"
@@ -43,5 +43,8 @@ func getUserCountonSite(siteName string) (float64, float64, float64) {
 	if err := systemManagerQuerystmt.QueryRow().Scan(&systemManagers); err != nil {
 		log.Println("systemManagerQuery failed ", err)
 	}
-	return allUsers, activeUsers, systemManagers
+	u <- allUsers
+	a <- activeUsers
+	s <- systemManagers
+	// return allUsers, activeUsers, systemManagers
 }

@@ -11,6 +11,7 @@
           pkgs.go
           pkgs.gotools
           pkgs.air
+          pkgs.gopls
         ];
       };
   };

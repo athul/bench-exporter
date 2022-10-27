@@ -47,21 +47,23 @@ func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 	apps := getApps()
 	versions := getAppVersions()
 	benchVersion := getBenchVersion()
+	a := make(chan float64)
+	u := make(chan float64)
+	s := make(chan float64)
 	sites := []string{}
 	for i := range apps {
 		sites = append(sites, apps[i].Site)
-		all, active, smusers := getUserCountonSite(apps[i].Site)
+		go getUserCountonSite(apps[i].Site, u, a, s)
 		ch <- prometheus.MustNewConstMetric(b.appsonSites, prometheus.CounterValue, float64(len(apps[i].Apps)), apps[i].Site, strings.Join(apps[i].Apps, ","))
 		if userCounts {
-			ch <- prometheus.MustNewConstMetric(b.usersonSites, prometheus.CounterValue, all, apps[i].Site)
-			ch <- prometheus.MustNewConstMetric(b.activeUsers, prometheus.CounterValue, active, apps[i].Site)
-			ch <- prometheus.MustNewConstMetric(b.systemUsers, prometheus.CounterValue, smusers, apps[i].Site)
+			ch <- prometheus.MustNewConstMetric(b.usersonSites, prometheus.CounterValue, <-u, apps[i].Site)
+			ch <- prometheus.MustNewConstMetric(b.activeUsers, prometheus.GaugeValue, <-a, apps[i].Site)
+			ch <- prometheus.MustNewConstMetric(b.systemUsers, prometheus.CounterValue, <-s, apps[i].Site)
 		}
 	}
-	ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.CounterValue, float64(len(apps)), strings.Join(sites, ","))
+	ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.GaugeValue, float64(len(apps)), strings.Join(sites, ","))
 	for i := range versions {
-		ch <- prometheus.MustNewConstMetric(b.benchAppVersions, prometheus.UntypedValue, 1.0, versions[i].App, versions[i].Version, versions[i].Commit)
+		ch <- prometheus.MustNewConstMetric(b.benchAppVersions, prometheus.CounterValue, 1.0, versions[i].App, versions[i].Version, versions[i].Commit)
 	}
 	ch <- prometheus.MustNewConstMetric(b.benchVersion, prometheus.CounterValue, 1.0, benchVersion)
-
 }
