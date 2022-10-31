@@ -60,7 +60,7 @@ func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 	}
 	ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.CounterValue, float64(len(apps)), strings.Join(sites, ","))
 	for i := range versions {
-		ch <- prometheus.MustNewConstMetric(b.benchAppVersions, prometheus.UntypedValue, 1.0, versions[i].App, versions[i].Version, versions[i].Commit)
+		ch <- prometheus.MustNewConstMetric(b.benchAppVersions, prometheus.CounterValue, 1.0, versions[i].App, versions[i].Version, versions[i].Commit)
 	}
 	ch <- prometheus.MustNewConstMetric(b.benchVersion, prometheus.CounterValue, 1.0, benchVersion)
 
