@@ -31,3 +31,38 @@ The data which are exported are:
 > **Note**  
 >The default port of the exporter is `9101`.  
 > The exporter path is `/metrics`
+
+## Usage
+
+Usually promethues exporters are run as a systemd service. This way you can define it once and forget about it even running. Here is a working example of configuring Bench Exporter with Systemd.
+
+```service
+# bench_exporter.service
+
+[Unit]
+Description=Bench Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+ExecStart=/usr/local/bin/bench_exporter --bench /home/frappe/frappe-bench --users
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+Here you have to replace the `bench-exporter` path and the path to your bench.
+
+You can enable and start the service with,
+
+```shell
+$ systemctl enable bench_exporter.service
+$ systemctl start bench_exporter.service
+```
+
+Once you've started the bench\_exporter service, You can navigate to `https://localhost:9101/metrics` and you can see the metrics.
+
