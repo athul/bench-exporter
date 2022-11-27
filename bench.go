@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"log"
 	"os/exec"
-	"strings"
 )
 
 // Holds the Sites and Apps installed on
 // the specific site
-type Apps struct {
+type Bench struct {
+	Sites   []string
+	SAPS    []Sites_and_Apps
+	Version []AppVersions
+}
+type Sites_and_Apps struct {
 	Site string
 	Apps []string
 }
@@ -35,7 +39,7 @@ func getSites() []string {
 
 // getApps returns the Apps installed on the site
 // Will return as a slice of Apps struct
-func getApps() []Apps {
+func getAll() Bench {
 	cmd := exec.Command("bench", "--site", "all", "list-apps", "--format", "json")
 	cmd.Dir = benchDir
 	out, err := cmd.Output()
@@ -44,18 +48,24 @@ func getApps() []Apps {
 	}
 	var apps map[string][]interface{}
 	json.Unmarshal(out, &apps)
-	var appstruct []Apps
+	var appstruct []Sites_and_Apps
+	var sites []string
 	for k, v := range apps {
+		sites = append(sites, k)
 		var appnames []string
 		for i := range v {
 			appnames = append(appnames, v[i].(string))
 		}
-		appstruct = append(appstruct, Apps{
+		appstruct = append(appstruct, Sites_and_Apps{
 			Site: k,
 			Apps: appnames,
 		})
 	}
-	return appstruct
+	return Bench{
+		Sites:   sites,
+		SAPS:    appstruct,
+		Version: getAppVersions(),
+	}
 }
 
 // AppVersions hold the JSON struct
@@ -79,15 +89,4 @@ func getAppVersions() []AppVersions {
 	var appversions []AppVersions
 	json.Unmarshal(out, &appversions)
 	return appversions
-}
-
-// getBenchVersion returns the version of Bench CLI installed
-func getBenchVersion() string {
-	cmd := exec.Command("bench", "--version")
-	cmd.Dir = benchDir
-	out, err := cmd.Output()
-	if err != nil {
-		log.Println("Unable to fetch bench version ", err)
-	}
-	return strings.TrimSuffix(string(out), "\n")
 }
