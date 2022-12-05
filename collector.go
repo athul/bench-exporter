@@ -46,6 +46,7 @@ func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 	sites := []string{}
 	for i := range bench.SAPS {
 		sites = append(sites, bench.SAPS[i].Site)
+		//TODO: Make a chan map[string]int for concurrent execution
 		all, active, smusers := getUserCountonSite(bench.SAPS[i].Site)
 		ch <- prometheus.MustNewConstMetric(b.appsonSites, prometheus.CounterValue, float64(len(bench.SAPS[i].Apps)), bench.SAPS[i].Site, strings.Join(bench.SAPS[i].Apps, ","))
 		if userCounts {
@@ -53,8 +54,8 @@ func (b *benchMetrics) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(b.activeUsers, prometheus.CounterValue, active, bench.SAPS[i].Site)
 			ch <- prometheus.MustNewConstMetric(b.systemUsers, prometheus.CounterValue, smusers, bench.SAPS[i].Site)
 		}
+		ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.CounterValue, float64(len(bench.Sites)), sites[i])
 	}
-	ch <- prometheus.MustNewConstMetric(b.benchSites, prometheus.CounterValue, float64(len(bench.Sites)), strings.Join(sites, ","))
 	for i := range versions {
 		ch <- prometheus.MustNewConstMetric(b.benchAppVersions, prometheus.CounterValue, 1.0, versions[i].App, versions[i].Version, versions[i].Commit)
 	}
