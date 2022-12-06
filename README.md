@@ -66,3 +66,8 @@ $ systemctl start bench_exporter.service
 
 Once you've started the bench\_exporter service, You can navigate to `https://localhost:9101/metrics` and you can see the metrics.
 
+## Grafana
+
+Once Prometheus fetches the data, you can connect Prometheus to Grafana server which could use the promethues data to display the fetched data into a more insightful manner. 
+
+You can create a new dashboard in Grafana to fetch the data. You can find a demo dashboard which uses Bench Exporter's data in the `dashboards` folder. You can read more about importing dashboards [here](https://grafana.com/docs/grafana/v9.3/dashboards/manage-dashboards).
